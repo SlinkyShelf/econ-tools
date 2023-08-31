@@ -54,24 +54,104 @@ function getEdge(x, y, width, height)
     return _4
 }
 
+function createEdgeLine(spacingArray, y, height)
+{
+    const width = spacingArray.length
+
+    let lineStr = ""
+    for (let x = 0; x < width; x++)
+    {
+        lineStr += getEdge(x, y, width+1, height+1)
+
+        for (let i = 0; i < spacingArray[x]; i++)
+        {
+            lineStr += hLine
+        }
+    }
+    lineStr += getEdge(width, y, width+1, height+1)
+
+    return lineStr
+}
+
+function createSpaceLine(spacingArray)
+{
+    const width = spacingArray.length
+
+    let lineStr = ""
+    for (let x = 0; x < width; x++)
+    {
+        lineStr += vLine
+
+        for (let i = 0; i < spacingArray[x]; i++)
+        {
+            lineStr += " "
+        }
+    }
+    lineStr += vLine
+
+    return lineStr
+}
+
+function createContentLine(spacingArray, content, spacing)
+{
+    const width = spacingArray.length
+
+    let lineStr = ""
+    for (let x = 0; x < width; x++)
+    {
+        lineStr += vLine
+
+        for (let i = 0; i < spacing; i++)
+            lineStr += " "
+
+        lineStr += content[x]
+
+        for (let i = 0; i < spacingArray[x]-spacing-content[x].length; i++)
+        {
+            lineStr += " "
+        }
+    }
+    lineStr += vLine
+
+    return lineStr
+}
+
 function drawGrid(grid)
 {
-    const width = 10
-    const height = 10
+    const width = grid[0].length
+    const height = grid.length
     
     let gridStr = ""
     const spacing = 1
 
+    // Spacing Array
+    const spacingArray = []
+    for (let x = 0; x < width; x++)
+    {
+        let largestStr = 0
+        for (let y = 0; y < height; y++)
+        {
+            if (largestStr < grid[y][x].length)
+                largestStr = grid[y][x].length
+        }
+
+        spacingArray.push(spacing*2 + largestStr)
+    }
+
     for (let y = 0; y < height; y++)
     {
         // Line
-        for (let x = 0; x < width; x++)
-        {
-            gridStr += getEdge(x, y, width+1, height+1)
-        }
-        gridStr += getEdge(width+1, y, width+1, height+1)
-        gridStr += "\n"
+        gridStr += createEdgeLine(spacingArray, y, height) + "\n"
+        for (let i = 0; i < spacing; i++)
+            gridStr += createSpaceLine(spacingArray, y, height) + "\n"
+
+        gridStr += createContentLine(spacingArray, grid[y], spacing) + "\n"
+
+        for (let i = 0; i < spacing; i++)
+            gridStr += createSpaceLine(spacingArray, y, height) + "\n"
+        // gridStr += "\n"
     }
+    gridStr += createEdgeLine(spacingArray, height, height) + "\n"
 
     return gridStr
 }
@@ -92,7 +172,7 @@ function loadGrid(grid)
     const drawMatrix = createMatrix(grid.length, grid[0].length)
 
     stdin.on("keypress", onKeypress)
-    console.log(drawGrid())
+    console.log(drawGrid(grid))
 }
 
 exports.loadGrid = loadGrid
